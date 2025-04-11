@@ -1,5 +1,6 @@
 package com.barcommerce.barcommerce.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.barcommerce.barcommerce.enums.TipoProduto;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
@@ -40,15 +41,24 @@ public class Produto {
     @Column(nullable = false)
     private Boolean ativo = true;
 
+    /**
+     * Relacionamento Many-to-One entre Produto e Categoria.
+     * A categoria de cada produto é representada por uma chave estrangeira.
+     */
+    @JsonBackReference  // Evita recursão infinita ao serializar a categoria associada
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "categoria_id", nullable = false)
     private Categoria categoria;
 
     // Construtores
+
+    // Construtor padrão necessário para JPA
     public Produto() {
-        // Construtor padrão necessário para JPA
     }
 
+    /**
+     * Construtor completo para criação de produto.
+     */
     public Produto(Long id, String nome, String descricao, BigDecimal preco,
                    Integer estoque, TipoProduto tipo, String imagemUrl,
                    Boolean ativo, Categoria categoria) {

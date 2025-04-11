@@ -1,5 +1,6 @@
 package com.barcommerce.barcommerce.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.util.List;
 
@@ -24,6 +25,7 @@ public class Categoria {
      * mappedBy = "categoria" refere-se ao campo "categoria" na entidade Produto.
      * cascade = CascadeType.ALL permite salvar/atualizar/deletar em cascata.
      */
+    @JsonManagedReference  // Evita recursão infinita ao serializar a lista de produtos
     @OneToMany(mappedBy = "categoria", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Produto> produtos;
 
