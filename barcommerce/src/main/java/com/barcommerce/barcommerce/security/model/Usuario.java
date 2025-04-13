@@ -10,7 +10,7 @@ import java.util.Collections;
 
 @Entity
 @Table(name = "usuarios")
-public class Usuario implements UserDetails { // Mantemos a nomenclatura em português
+public class Usuario implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -51,11 +51,16 @@ public class Usuario implements UserDetails { // Mantemos a nomenclatura em port
         return role;
     }
 
-    // Métodos da interface UserDetails (em inglês, mas mapeados para português)
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singletonList(new SimpleGrantedAuthority(role.name()));
+        return Collections.singletonList(
+                new SimpleGrantedAuthority(this.role.name().startsWith("ROLE_")
+                        ? this.role.name()
+                        : "ROLE_" + this.role.name())
+        );
     }
+
 
     @Override
     public String getPassword() { // Mapeia para "senha"

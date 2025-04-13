@@ -1,50 +1,74 @@
-// UsuarioDTO.java
 package com.barcommerce.barcommerce.security.dto;
 
 import com.barcommerce.barcommerce.security.enums.Role;
+import com.barcommerce.barcommerce.security.model.Usuario;
 import jakarta.validation.constraints.*;
 
 public class UsuarioDTO {
-    @NotBlank @Email
+
+    @NotBlank
+    @Email
     private String email;
 
-    @NotBlank @Size(min=6)
+    @Size(min = 6)
+    @NotBlank
     private String senha;
 
-    @NotNull
+    @Size(min = 6)
+    @NotBlank
+    private String senhaConfirmacao;
+
+    // Role pode ser opcional agora, será definida no backend
     private Role role;
 
+    // Construtor vazio
     public UsuarioDTO() {}
 
-    // <-- Adicione este construtor:
+    // Construtor manual (sem senhaConfirmacao para evitar uso indevido)
     public UsuarioDTO(String email, String senha, Role role) {
         this.email = email;
         this.senha = senha;
         this.role = role;
     }
 
-    public @NotBlank @Email String getEmail() {
+    // Construtor baseado em entidade Usuario (resposta)
+    public UsuarioDTO(Usuario usuario) {
+        this.email = usuario.getEmail();
+        this.role = usuario.getRole();
+        this.senha = null;
+        this.senhaConfirmacao = null;
+    }
+
+    // Getters e Setters
+    public String getEmail() {
         return email;
     }
 
-    public void setEmail(@NotBlank @Email String email) {
+    public void setEmail(String email) {
         this.email = email;
     }
 
-    public @NotBlank @Size(min = 6) String getSenha() {
+    public String getSenha() {
         return senha;
     }
 
-    public void setSenha(@NotBlank @Size(min = 6) String senha) {
+    public void setSenha(String senha) {
         this.senha = senha;
     }
 
-    public @NotNull Role getRole() {
+    public String getSenhaConfirmacao() {
+        return senhaConfirmacao;
+    }
+
+    public void setSenhaConfirmacao(String senhaConfirmacao) {
+        this.senhaConfirmacao = senhaConfirmacao;
+    }
+
+    public Role getRole() {
         return role;
     }
 
-    public void setRole(@NotNull Role role) {
+    public void setRole(Role role) {
         this.role = role;
     }
-
 }

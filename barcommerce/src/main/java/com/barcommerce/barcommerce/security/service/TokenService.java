@@ -12,6 +12,7 @@ import java.util.Date;
 
 /**
  * Serviço responsável pela geração e validação de tokens JWT.
+ * Configurado para trabalhar com roles SEM o prefixo "ROLE_".
  */
 @Service
 public class TokenService {
@@ -23,22 +24,19 @@ public class TokenService {
             @Value("${jwt.secret}") String secret,
             @Value("${jwt.expiration}") long expirationMillis) {
 
+        // Validação da chave secreta (mínimo 256 bits)
         byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
-        // Garante ao menos 256 bits (32 bytes) para HS256
         if (keyBytes.length < 32) {
             throw new IllegalArgumentException(
-                    "O jwt.secret deve ter pelo menos 32 bytes (256 bits). " +
-                            "Gere um valor aleatório com 32+ bytes.");
+                    "A chave JWT deve ter pelo menos 32 bytes (256 bits) para segurança adequada.");
         }
         this.signingKey = Keys.hmacShaKeyFor(keyBytes);
         this.expirationMillis = expirationMillis;
     }
 
     /**
-     * Gera um JWT contendo o email como subject e a role como claim.
-     *
-     * @param usuario o usuário autenticado
-     * @return token JWT assinado
+     * Gera um token JWT com email (subject) e role (claim).
+     * Role é armazenada SEM o prefixo "ROLE_".
      */
     public String gerarToken(Usuario usuario) {
         Date agora = new Date();
@@ -46,7 +44,7 @@ public class TokenService {
 
         return Jwts.builder()
                 .setSubject(usuario.getEmail())
-                .claim("role", usuario.getRole().name())
+                .claim("role", usuario.getRole().name()) // Exemplo: "ADMIN"
                 .setIssuedAt(agora)
                 .setExpiration(expiracao)
                 .signWith(signingKey, SignatureAlgorithm.HS256)
@@ -54,10 +52,7 @@ public class TokenService {
     }
 
     /**
-     * Valida um token JWT: verifica assinatura e expiração.
-     *
-     * @param token o JWT bruto
-     * @return true se válido, false caso contrário
+     * Valida a assinatura e a expiração do token.
      */
     public boolean validarToken(String token) {
         try {
@@ -67,24 +62,31 @@ public class TokenService {
                     .parseClaimsJws(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
-            // logger.warn("Token inválido: {}", e.getMessage());
             return false;
         }
     }
 
     /**
-     * Extrai o subject (email) de um token válido.
-     *
-     * @param token o JWT bruto (assume que já foi validado)
-     * @return o email do usuário
-     * @throws JwtException se o token for inválido
+     * Extrai o email do usuário (subject) do token.
      */
     public String getSubject(String token) {
-        Claims claims = Jwts.parserBuilder()
+        return Jwts.parserBuilder()
                 .setSigningKey(signingKey)
                 .build()
                 .parseClaimsJws(token)
-                .getBody();
-        return claims.getSubject();
+                .getBody()
+                .getSubject();
+    }
+
+    /**
+     * Extrai a role do token (sem prefixo "ROLE_").
+     */
+    public String getRole(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(signingKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("role", String.class);
     }
 }

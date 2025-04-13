@@ -40,6 +40,7 @@ public class SecurityConfig {
                         // rotas públicas:
                         .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v3/api-docs/**", "/swagger-ui/**").permitAll()
+                        .requestMatchers("/api/mesas/**", "/api/pedidos/**").hasRole("ADMIN")
                         // todas as outras rotas requerem autenticação:
                         .anyRequest().authenticated()
                 )
