@@ -6,8 +6,11 @@ com\barcommerce\barcommerce\model\Produto.class
 com\barcommerce\barcommerce\controller\ProdutoController.class
 com\barcommerce\barcommerce\dto\ProdutoDTO.class
 com\barcommerce\barcommerce\exception\ProdutoNaoEncontradoException.class
+com\barcommerce\barcommerce\config\OpenApiConfig.class
+com\barcommerce\barcommerce\exception\ApiExceptionHandler.class
 com\barcommerce\barcommerce\dto\ProdutoDTO$CategoriaRefDTO.class
 com\barcommerce\barcommerce\mapper\ProdutoMapper.class
+com\barcommerce\barcommerce\exception\ApiError.class
 com\barcommerce\barcommerce\model\Categoria.class
 com\barcommerce\barcommerce\repository\CategoriaRepository.class
 com\barcommerce\barcommerce\repository\ProdutoRepository.class
