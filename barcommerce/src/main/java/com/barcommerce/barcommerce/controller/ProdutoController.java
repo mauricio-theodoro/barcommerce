@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/produtos")
@@ -22,13 +23,19 @@ public class ProdutoController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Produto>> listarTodos() {
-        return ResponseEntity.ok(produtoService.listarTodos());
+    public ResponseEntity<List<ProdutoDTO>> listarTodos() {
+        List<ProdutoDTO> dtos = produtoService.listarTodos()
+                .stream()
+                .map(ProdutoMapper::toDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Produto> buscarPorId(@PathVariable Long id) {
-        return produtoService.buscarPorId(id)
+    public ResponseEntity<ProdutoDTO> buscarPorId(@PathVariable Long id) {
+        Optional<ProdutoDTO> dto = produtoService.buscarPorId(id)
+                .map(ProdutoMapper::toDTO);
+        return dto
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -36,9 +43,8 @@ public class ProdutoController {
     @PostMapping
     public ResponseEntity<?> criar(@Valid @RequestBody ProdutoDTO dto) {
         Produto produto = ProdutoMapper.toEntity(dto);
-        Optional<Produto> novoProduto = produtoService.criarProduto(produto);
-
-        return novoProduto
+        return produtoService.criarProduto(produto)
+                .map(ProdutoMapper::toDTO)
                 .<ResponseEntity<?>>map(ResponseEntity::ok)
                 .orElse(ResponseEntity.badRequest().body("Categoria inválida ou não informada."));
     }
@@ -46,11 +52,10 @@ public class ProdutoController {
     @PutMapping("/{id}")
     public ResponseEntity<?> atualizar(@PathVariable Long id, @Valid @RequestBody ProdutoDTO dto) {
         Produto produto = ProdutoMapper.toEntity(dto);
-        Optional<Produto> atualizado = produtoService.atualizarProduto(id, produto);
-
-        return atualizado
+        return produtoService.atualizarProduto(id, produto)
+                .map(ProdutoMapper::toDTO)
                 .<ResponseEntity<?>>map(ResponseEntity::ok)
-                .orElse(ResponseEntity.badRequest().body("Produto ou categoria inválida."));
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
