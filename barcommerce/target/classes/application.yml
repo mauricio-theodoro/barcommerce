@@ -31,3 +31,8 @@ spring:
       enabled: true
     livereload:
       enabled: true
+
+# Configurações do JWT
+jwt:
+  secret: PjB1EU32+zohxnFX9FZQXA7hJDjBmJI6EoWqCbwLeG8=
+  expiration: 86400000  # 1 dia em milissegundos
