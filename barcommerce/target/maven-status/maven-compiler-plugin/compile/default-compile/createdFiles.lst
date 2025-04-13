@@ -1,0 +1,13 @@
+com\barcommerce\barcommerce\service\ProdutoService.class
+com\barcommerce\barcommerce\controller\CategoriaController.class
+com\barcommerce\barcommerce\enums\TipoProduto.class
+com\barcommerce\barcommerce\BarcommerceApplication.class
+com\barcommerce\barcommerce\model\Produto.class
+com\barcommerce\barcommerce\controller\ProdutoController.class
+com\barcommerce\barcommerce\dto\ProdutoDTO.class
+com\barcommerce\barcommerce\exception\ProdutoNaoEncontradoException.class
+com\barcommerce\barcommerce\dto\ProdutoDTO$CategoriaRefDTO.class
+com\barcommerce\barcommerce\mapper\ProdutoMapper.class
+com\barcommerce\barcommerce\model\Categoria.class
+com\barcommerce\barcommerce\repository\CategoriaRepository.class
+com\barcommerce\barcommerce\repository\ProdutoRepository.class

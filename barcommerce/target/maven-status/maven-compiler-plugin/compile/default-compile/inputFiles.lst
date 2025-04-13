@@ -1,0 +1,12 @@
+C:\Users\Mauricio\IdeaProjects\barcommerce\src\main\java\com\barcommerce\barcommerce\BarcommerceApplication.java
+C:\Users\Mauricio\IdeaProjects\barcommerce\src\main\java\com\barcommerce\barcommerce\controller\CategoriaController.java
+C:\Users\Mauricio\IdeaProjects\barcommerce\src\main\java\com\barcommerce\barcommerce\controller\ProdutoController.java
+C:\Users\Mauricio\IdeaProjects\barcommerce\src\main\java\com\barcommerce\barcommerce\dto\ProdutoDTO.java
+C:\Users\Mauricio\IdeaProjects\barcommerce\src\main\java\com\barcommerce\barcommerce\enums\TipoProduto.java
+C:\Users\Mauricio\IdeaProjects\barcommerce\src\main\java\com\barcommerce\barcommerce\exception\ProdutoNaoEncontradoException.java
+C:\Users\Mauricio\IdeaProjects\barcommerce\src\main\java\com\barcommerce\barcommerce\mapper\ProdutoMapper.java
+C:\Users\Mauricio\IdeaProjects\barcommerce\src\main\java\com\barcommerce\barcommerce\model\Categoria.java
+C:\Users\Mauricio\IdeaProjects\barcommerce\src\main\java\com\barcommerce\barcommerce\model\Produto.java
+C:\Users\Mauricio\IdeaProjects\barcommerce\src\main\java\com\barcommerce\barcommerce\repository\CategoriaRepository.java
+C:\Users\Mauricio\IdeaProjects\barcommerce\src\main\java\com\barcommerce\barcommerce\repository\ProdutoRepository.java
+C:\Users\Mauricio\IdeaProjects\barcommerce\src\main\java\com\barcommerce\barcommerce\service\ProdutoService.java

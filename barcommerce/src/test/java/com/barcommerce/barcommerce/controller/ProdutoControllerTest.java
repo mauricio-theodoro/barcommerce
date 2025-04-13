@@ -1,20 +1,18 @@
 package com.barcommerce.barcommerce.controller;
 
+import com.barcommerce.barcommerce.dto.ProdutoDTO;
+import com.barcommerce.barcommerce.dto.ProdutoDTO.CategoriaRefDTO;
+import com.barcommerce.barcommerce.enums.TipoProduto;
 import com.barcommerce.barcommerce.model.Categoria;
 import com.barcommerce.barcommerce.model.Produto;
 import com.barcommerce.barcommerce.service.ProdutoService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import static org.mockito.ArgumentMatchers.eq;
-
-
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import com.barcommerce.barcommerce.controller.ProdutoController;
-
-
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -23,12 +21,11 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
 
 @WebMvcTest(ProdutoController.class)
 class ProdutoControllerTest {
@@ -42,35 +39,104 @@ class ProdutoControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Test
-    @DisplayName("GET /api/produtos → retorna lista de produtos")
-    void listarTodos_deveRetornarLista() throws Exception {
-        Produto p1 = new Produto(1L, "Cerveja", new BigDecimal("5.00"), 10, null, null);
-        Produto p2 = new Produto(2L, "Refrigerante", new BigDecimal("4.50"), 20, null, null);
+    private ProdutoDTO dto;
+    private Produto entity;
+    private Categoria categoria;
 
-        when(produtoService.listarTodos()).thenReturn(List.of(p1, p2));
+    @BeforeEach
+    void setUp() {
+        // Categoria de teste
+        categoria = new Categoria();
+        categoria.setId(1L);
+        categoria.setNome("Bebidas");
+
+        // DTO de entrada
+        dto = new ProdutoDTO();
+        dto.setNome("Coca-Cola");
+        dto.setDescricao("Refrigerante 2L");
+        dto.setPreco(new BigDecimal("5.50"));
+        dto.setEstoque(100);
+        dto.setTipo(TipoProduto.BEBIDA.name());
+        dto.setImagemUrl("http://exemplo.com/coca.jpg");
+        dto.setAtivo(true);
+        CategoriaRefDTO catRef = new CategoriaRefDTO();
+        catRef.setId(1L);
+        dto.setCategoria(catRef);
+
+        // Entidade de saída
+        entity = new Produto();
+        entity.setId(10L);
+        entity.setNome(dto.getNome());
+        entity.setDescricao(dto.getDescricao());
+        entity.setPreco(dto.getPreco());
+        entity.setEstoque(dto.getEstoque());
+        entity.setTipo(TipoProduto.BEBIDA);
+        entity.setImagemUrl(dto.getImagemUrl());
+        entity.setAtivo(true);
+        entity.setCategoria(categoria);
+    }
+
+    @Test
+    @DisplayName("POST /api/produtos → cria produto e retorna 200")
+    void criarProduto_sucesso() throws Exception {
+        when(produtoService.criarProduto(any(Produto.class)))
+                .thenReturn(Optional.of(entity));
+
+        mockMvc.perform(post("/api/produtos")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(10))
+                .andExpect(jsonPath("$.nome").value("Coca-Cola"))
+                .andExpect(jsonPath("$.tipo").value("BEBIDA"))
+                .andExpect(jsonPath("$.categoria.id").value(1));
+
+        // Verifica que o serviço recebeu a entidade corretamente mapeada
+        ArgumentCaptor<Produto> captor = ArgumentCaptor.forClass(Produto.class);
+        verify(produtoService).criarProduto(captor.capture());
+        Produto capturado = captor.getValue();
+        assertThat(capturado.getNome()).isEqualTo(dto.getNome());
+        assertThat(capturado.getTipo()).isEqualTo(TipoProduto.BEBIDA);
+        assertThat(capturado.getCategoria().getId()).isEqualTo(1L);
+    }
+
+    @Test
+    @DisplayName("POST /api/produtos → categoria inválida retorna 400")
+    void criarProduto_categoriaInvalida() throws Exception {
+        when(produtoService.criarProduto(any(Produto.class)))
+                .thenReturn(Optional.empty());
+
+        mockMvc.perform(post("/api/produtos")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Categoria inválida ou não informada."));
+    }
+
+    @Test
+    @DisplayName("GET /api/produtos → lista produtos retorna 200")
+    void listarProdutos() throws Exception {
+        when(produtoService.listarTodos()).thenReturn(List.of(entity));
 
         mockMvc.perform(get("/api/produtos"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[1].nome").value("Refrigerante"));
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].id").value(10));
     }
 
     @Test
-    @DisplayName("GET /api/produtos/{id} → quando existe retorna 200")
-    void buscarPorId_quandoExiste_retorna200() throws Exception {
-        Produto p = new Produto(1L, "Cerveja", new BigDecimal("5.00"), 10, null, null);
-        when(produtoService.buscarPorId(1L)).thenReturn(Optional.of(p));
+    @DisplayName("GET /api/produtos/{id} → produto existe retorna 200")
+    void buscarPorId_existe() throws Exception {
+        when(produtoService.buscarPorId(10L)).thenReturn(Optional.of(entity));
 
-        mockMvc.perform(get("/api/produtos/1"))
+        mockMvc.perform(get("/api/produtos/10"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.nome").value("Cerveja"));
+                .andExpect(jsonPath("$.nome").value("Coca-Cola"));
     }
 
     @Test
-    @DisplayName("GET /api/produtos/{id} → quando não existe retorna 404")
-    void buscarPorId_quandoNaoExiste_retorna404() throws Exception {
+    @DisplayName("GET /api/produtos/{id} → não existe retorna 404")
+    void buscarPorId_naoExiste() throws Exception {
         when(produtoService.buscarPorId(99L)).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/api/produtos/99"))
@@ -78,98 +144,43 @@ class ProdutoControllerTest {
     }
 
     @Test
-    @DisplayName("POST /api/produtos → cria com sucesso retorna 200")
-    void criar_deveRetornar200_quandoSucesso() throws Exception {
-        Categoria cat = new Categoria();
-        cat.setId(1L);
-        Produto novo = new Produto(null, "Cerveja", new BigDecimal("5.00"), 10, null, cat);
-        Produto salvo = new Produto(1L, "Cerveja", new BigDecimal("5.00"), 10, null, cat);
-
-        when(produtoService.criarProduto(any(Produto.class))).thenReturn(Optional.of(salvo));
-
-        mockMvc.perform(post("/api/produtos")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(novo)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.nome").value("Cerveja"));
-    }
-
-    @Test
-    @DisplayName("POST /api/produtos → falha quando categoria inválida retorna 400")
-    void criar_quandoCategoriaInvalida_retorna400() throws Exception {
-        Produto novo = new Produto(null, "Cerveja", new BigDecimal("5.00"), 10, null, null);
-
-        when(produtoService.criarProduto(any(Produto.class))).thenReturn(Optional.empty());
-
-        mockMvc.perform(post("/api/produtos")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(novo)))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
     @DisplayName("PUT /api/produtos/{id} → atualiza com sucesso retorna 200")
-    void atualizar_deveRetornar200_quandoSucesso() throws Exception {
-        Categoria cat = new Categoria();
-        cat.setId(1L);
-        Produto atualizado = new Produto(1L, "Cerveja Long Neck", new BigDecimal("6.00"), 15, null, cat);
+    void atualizarProduto_sucesso() throws Exception {
+        when(produtoService.atualizarProduto(eq(10L), any(Produto.class)))
+                .thenReturn(Optional.of(entity));
 
-        when(produtoService.atualizarProduto(eq(1L), any(Produto.class)))
-                .thenReturn(Optional.of(atualizado));
-
-        mockMvc.perform(put("/api/produtos/1")
+        mockMvc.perform(put("/api/produtos/10")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(atualizado)))
+                        .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.nome").value("Cerveja Long Neck"))
-                .andExpect(jsonPath("$.preco").value(6.00))
-                .andExpect(jsonPath("$.estoque").value(15));
+                .andExpect(jsonPath("$.id").value(10))
+                .andExpect(jsonPath("$.nome").value("Coca-Cola"));
     }
 
     @Test
-    @DisplayName("PUT /api/produtos/{id} → falha quando categoria inválida retorna 400")
-    void atualizar_quandoCategoriaInvalida_retorna400() throws Exception {
-        Produto semCategoria = new Produto(null, "Cerveja", new BigDecimal("5.00"), 10, null, null);
-
-        when(produtoService.atualizarProduto(eq(1L), any(Produto.class)))
+    @DisplayName("PUT /api/produtos/{id} → falha retorna 404")
+    void atualizarProduto_falha() throws Exception {
+        when(produtoService.atualizarProduto(eq(10L), any(Produto.class)))
                 .thenReturn(Optional.empty());
 
-        mockMvc.perform(put("/api/produtos/1")
+        mockMvc.perform(put("/api/produtos/10")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(semCategoria)))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    @DisplayName("PUT /api/produtos/{id} → falha quando produto não existe retorna 404")
-    void atualizar_quandoNaoExiste_retorna404() throws Exception {
-        Categoria cat = new Categoria();
-        cat.setId(1L);
-        Produto produto = new Produto(null, "Cerveja", new BigDecimal("5.00"), 10, null, cat);
-
-        when(produtoService.atualizarProduto(eq(99L), any(Produto.class)))
-                .thenReturn(Optional.empty());
-
-        mockMvc.perform(put("/api/produtos/99")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(produto)))
+                        .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    @DisplayName("DELETE /api/produtos/{id} → deleta com sucesso retorna 204")
-    void deletar_deveRetornar204_quandoSucesso() throws Exception {
-        when(produtoService.deletarProduto(1L)).thenReturn(true);
+    @DisplayName("DELETE /api/produtos/{id} → deleta retorna 204")
+    void deletarProduto_sucesso() throws Exception {
+        when(produtoService.deletarProduto(10L)).thenReturn(true);
 
-        mockMvc.perform(delete("/api/produtos/1"))
+        mockMvc.perform(delete("/api/produtos/10"))
                 .andExpect(status().isNoContent());
     }
 
     @Test
-    @DisplayName("DELETE /api/produtos/{id} → falha quando não existe retorna 404")
-    void deletar_quandoNaoExiste_retorna404() throws Exception {
+    @DisplayName("DELETE /api/produtos/{id} → não existe retorna 404")
+    void deletarProduto_naoExiste() throws Exception {
         when(produtoService.deletarProduto(99L)).thenReturn(false);
 
         mockMvc.perform(delete("/api/produtos/99"))

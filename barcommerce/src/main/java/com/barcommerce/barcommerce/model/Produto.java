@@ -3,6 +3,8 @@ package com.barcommerce.barcommerce.model;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.barcommerce.barcommerce.enums.TipoProduto;
 import jakarta.persistence.*;
+import lombok.Data;
+
 import java.math.BigDecimal;
 
 /**
@@ -11,6 +13,7 @@ import java.math.BigDecimal;
  * <p>Mapeada para a tabela 'produtos' no banco de dados com todas as
  * configurações necessárias para operações JPA.</p>
  */
+@Data
 @Entity
 @Table(name = "produtos")
 public class Produto {
