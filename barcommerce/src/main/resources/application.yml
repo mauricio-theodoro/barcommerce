@@ -31,8 +31,20 @@ spring:
       enabled: true
     livereload:
       enabled: true
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 15MB
+      max-request-size: 15MB
 
+app:
+  upload:
+    allowed-types: image/jpeg,image/png,image/gif
+    dir: ./uploads/produtos
 # Configurações do JWT
 jwt:
   secret: PjB1EU32+zohxnFX9FZQXA7hJDjBmJI6EoWqCbwLeG8=
   expiration: 86400000  # 1 dia em milissegundos
+logging:
+  level:
+    org.springframework.web: DEBUG

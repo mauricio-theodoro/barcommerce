@@ -64,6 +64,7 @@ public class AdminController {
      * Remove um usuário do sistema.
      * @param id ID do usuário a ser removido
      */
+
     @Operation(summary = "Deletar usuário", description = "Remove um usuário permanentemente.")
     @DeleteMapping("/usuarios/{id}")
     public ResponseEntity<Void> deletarUsuario(@PathVariable Long id) {

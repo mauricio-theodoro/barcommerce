@@ -1,33 +1,34 @@
-package com.barcommerce.barcommerce.model;
+package com.barcommerce.barcommerce.dto;
 
 import com.barcommerce.barcommerce.enums.StatusMesa;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 
 /**
- * Representa uma mesa no restaurante/bar.
+ * DTO para transferência de dados de Mesa.
  */
-@Entity
-@Table(name = "mesas")
-public class Mesa {
+public class MesaDTO {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotBlank(message = "Identificação da mesa é obrigatória.")
-    @Column(nullable = false, unique = true)
     private String identificacao;
 
     @NotNull(message = "Capacidade da mesa é obrigatória.")
-    @Column(nullable = false)
+    @Positive(message = "Capacidade deve ser maior que zero.")
     private Integer capacidade;
 
-    @NotNull(message = "Status da mesa é obrigatório.")
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private StatusMesa status = StatusMesa.LIVRE;
+    private StatusMesa status;
+
+    public MesaDTO() {
+        // Construtor para desserialização
+    }
+
+    public MesaDTO(Long id, String identificacao, Integer capacidade, StatusMesa status) {
+        this.id = id;
+        this.identificacao = identificacao;
+        this.capacidade = capacidade;
+        this.status = status;
+    }
 
     // Getters e Setters
 
@@ -40,7 +41,6 @@ public class Mesa {
     }
 
     public String getIdentificacao() {
-
         return identificacao;
     }
 
