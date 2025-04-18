@@ -37,11 +37,30 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // rotas públicas:
+                        // 1) public: autenticação de funcionários/admin
                         .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
+                        // 2) public: auto‑cadastro de cliente via QR
+                        .requestMatchers(HttpMethod.POST, "/api/clientes").permitAll()
+                        // 3) Swagger/OpenAPI
                         .requestMatchers(HttpMethod.GET, "/v3/api-docs/**", "/swagger-ui/**").permitAll()
-                        .requestMatchers("/api/mesas/**", "/api/pedidos/**").hasRole("ADMIN")
-                        // todas as outras rotas requerem autenticação:
+
+                        // 4) gestão de mesas e pedidos: só GERENTE e FUNCIONARIO
+                        .requestMatchers("/api/mesas/**", "/api/pedidos/**")
+                        .hasAnyRole("GERENTE","FUNCIONARIO")
+
+                        // 5) caixa: só GERENTE e ADMIN
+                        .requestMatchers("/api/caixa/**")
+                        .hasAnyRole("GERENTE","ADMIN")
+
+                        // 6) clientes (listar/editar/remover): só ADMIN e GERENTE
+                        .requestMatchers(HttpMethod.GET,    "/api/clientes/**").hasAnyRole("ADMIN","GERENTE")
+                        .requestMatchers(HttpMethod.PUT,    "/api/clientes/**").hasAnyRole("ADMIN","GERENTE")
+                        .requestMatchers(HttpMethod.DELETE, "/api/clientes/**").hasAnyRole("ADMIN","GERENTE")
+
+                        // 7) dashboard: só ADMIN e GERENTE (via @PreAuthorize)
+                        // .requestMatchers("/api/dashboard/**").hasAnyRole("ADMIN","GERENTE")
+
+                        // 8) TODO: outras rotas devem pedir autenticação
                         .anyRequest().authenticated()
                 )
                 .authenticationManager(authenticationManager(http.getSharedObject(AuthenticationConfiguration.class)))
@@ -52,8 +71,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration cfg) throws Exception {
+        return cfg.getAuthenticationManager();
     }
 
     @Bean

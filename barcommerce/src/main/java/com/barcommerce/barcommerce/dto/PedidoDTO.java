@@ -13,23 +13,30 @@ public class PedidoDTO {
 
     private Long id;
 
-    @NotNull(message = "ID da mesa é obrigatório.")
+    @NotNull(message = "Cliente obrigatório")
+    private Long clienteId;
+
+    @NotNull(message = "Mesa obrigatória")
     private Long mesaId;
 
-    @NotEmpty(message = "Pedido deve ter ao menos um item.")
+    @NotEmpty(message = "Pedido deve ter ao menos um item")
     private List<ItemPedidoDTO> itens;
 
     private StatusPedido status;
     private BigDecimal total;
     private LocalDateTime dataHora;
 
-    public PedidoDTO() {
-        // Construtor para desserialização
-    }
+    public PedidoDTO() {}
 
-    public PedidoDTO(Long id, Long mesaId, List<ItemPedidoDTO> itens,
-                     StatusPedido status, BigDecimal total, LocalDateTime dataHora) {
+    public PedidoDTO(Long id,
+                     Long clienteId,
+                     Long mesaId,
+                     List<ItemPedidoDTO> itens,
+                     StatusPedido status,
+                     BigDecimal total,
+                     LocalDateTime dataHora) {
         this.id = id;
+        this.clienteId = clienteId;
         this.mesaId = mesaId;
         this.itens = itens;
         this.status = status;
@@ -37,29 +44,64 @@ public class PedidoDTO {
         this.dataHora = dataHora;
     }
 
-    // Getters e Setters
+    // —— Getters e Setters ——————————————————————————————————
 
-    public Long getId() { return id; }
+    public Long getId() {
+        return id;
+    }
 
-    public void setId(Long id) { this.id = id; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public Long getMesaId() { return mesaId; }
+    @NotNull(message = "Cliente obrigatório")
+    public Long getClienteId() {
+        return clienteId;
+    }
 
-    public void setMesaId(Long mesaId) { this.mesaId = mesaId; }
+    public void setClienteId(Long clienteId) {
+        this.clienteId = clienteId;
+    }
 
-    public List<ItemPedidoDTO> getItens() { return itens; }
+    @NotNull(message = "Mesa obrigatória")
+    public Long getMesaId() {
+        return mesaId;
+    }
 
-    public void setItens(List<ItemPedidoDTO> itens) { this.itens = itens; }
+    public void setMesaId(Long mesaId) {
+        this.mesaId = mesaId;
+    }
 
-    public StatusPedido getStatus() { return status; }
+    @NotEmpty(message = "Pedido deve ter ao menos um item")
+    public List<ItemPedidoDTO> getItens() {
+        return itens;
+    }
 
-    public void setStatus(StatusPedido status) { this.status = status; }
+    public void setItens(List<ItemPedidoDTO> itens) {
+        this.itens = itens;
+    }
 
-    public BigDecimal getTotal() { return total; }
+    public StatusPedido getStatus() {
+        return status;
+    }
 
-    public void setTotal(BigDecimal total) { this.total = total; }
+    public void setStatus(StatusPedido status) {
+        this.status = status;
+    }
 
-    public LocalDateTime getDataHora() { return dataHora; }
+    public BigDecimal getTotal() {
+        return total;
+    }
 
-    public void setDataHora(LocalDateTime dataHora) { this.dataHora = dataHora; }
+    public void setTotal(BigDecimal total) {
+        this.total = total;
+    }
+
+    public LocalDateTime getDataHora() {
+        return dataHora;
+    }
+
+    public void setDataHora(LocalDateTime dataHora) {
+        this.dataHora = dataHora;
+    }
 }

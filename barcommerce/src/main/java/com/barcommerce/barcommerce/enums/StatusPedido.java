@@ -4,5 +4,6 @@ public enum StatusPedido {
     ABERTO,
     EM_PREPARO,
     ENTREGUE,
-    CANCELADO
+    CANCELADO,
+    FECHADO // Novo status para indicar pedido finalizado
 }

@@ -38,9 +38,11 @@ spring:
       max-request-size: 15MB
 
 app:
+  base-url: http://localhost:8080
   upload:
-    allowed-types: image/jpeg,image/png,image/gif
     dir: ./uploads/produtos
+    allowed-types: image/jpeg,image/png,image/gif
+
 # Configurações do JWT
 jwt:
   secret: PjB1EU32+zohxnFX9FZQXA7hJDjBmJI6EoWqCbwLeG8=

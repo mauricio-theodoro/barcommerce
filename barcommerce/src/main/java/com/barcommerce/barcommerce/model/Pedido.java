@@ -19,6 +19,12 @@ public class Pedido {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+
+
+    @ManyToOne
+    @JoinColumn(name="cliente_id", nullable=false)
+    private Cliente cliente;
+
     @NotNull(message = "Mesa é obrigatória.")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mesa_id", nullable = false)
@@ -63,21 +69,47 @@ public class Pedido {
 
     public Long getId() { return id; }
 
-    public void setId(Long id) { this.id = id; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public Mesa getMesa() { return mesa; }
+    public Mesa getMesa() {
+        return mesa;
+    }
 
-    public void setMesa(Mesa mesa) { this.mesa = mesa; }
+    public void setMesa(Mesa mesa) {
+        this.mesa = mesa;
+    }
 
-    public StatusPedido getStatus() { return status; }
+    public StatusPedido getStatus() {
+        return status;
+    }
 
-    public void setStatus(StatusPedido status) { this.status = status; }
+    public void setStatus(StatusPedido status) {
+        this.status = status;
+    }
 
-    public List<ItemPedido> getItens() { return itens; }
+    public List<ItemPedido> getItens() {
+        return itens;
+    }
 
-    public void setItens(List<ItemPedido> itens) { this.itens = itens; }
+    public void setItens(List<ItemPedido> itens) {
+        this.itens = itens;
+    }
 
-    public BigDecimal getTotal() { return total; }
+    public BigDecimal getTotal() {
+        return total;
+    }
 
-    public LocalDateTime getDataHora() { return dataHora; }
+    public LocalDateTime getDataHora() {
+        return dataHora;
+    }
+
+    public Cliente getCliente() {
+        return cliente;
+    }
+
+    public void setCliente(Cliente cliente) {
+        this.cliente = cliente;
+    }
 }

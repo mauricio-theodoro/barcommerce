@@ -2,6 +2,8 @@ package com.barcommerce.barcommerce.dto;
 
 import jakarta.validation.constraints.*;
 
+import java.math.BigDecimal;
+
 /**
  * DTO para transferência de dados de ItemPedido.
  */
@@ -16,14 +18,17 @@ public class ItemPedidoDTO {
     @Positive(message = "Quantidade deve ser maior que zero.")
     private Integer quantidade;
 
+    private BigDecimal subtotal;
+
     public ItemPedidoDTO() {
         // Construtor para desserialização
     }
 
-    public ItemPedidoDTO(Long id, Long produtoId, Integer quantidade) {
+    public ItemPedidoDTO(Long id, Long produtoId, Integer quantidade, BigDecimal subtotal) {
         this.id = id;
         this.produtoId = produtoId;
         this.quantidade = quantidade;
+        this.subtotal = subtotal;
     }
 
     // Getters e Setters
@@ -50,5 +55,14 @@ public class ItemPedidoDTO {
 
     public void setQuantidade(Integer quantidade) {
         this.quantidade = quantidade;
+    }
+
+    public BigDecimal getSubtotal() {
+        return subtotal;
+    }
+
+    // embora nunca venha do front, o setter é necessário para o mapper
+    public void setSubtotal(BigDecimal subtotal) {
+        this.subtotal = subtotal;
     }
 }
