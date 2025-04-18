@@ -16,6 +16,7 @@ public class PedidoDTO {
     @NotNull(message = "Cliente obrigatório")
     private Long clienteId;
 
+
     @NotNull(message = "Mesa obrigatória")
     private Long mesaId;
 

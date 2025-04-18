@@ -2,7 +2,6 @@ package com.barcommerce.barcommerce.mapper;
 
 import com.barcommerce.barcommerce.dto.PedidoDTO;
 import com.barcommerce.barcommerce.model.Cliente;
-import com.barcommerce.barcommerce.model.ItemPedido;
 import com.barcommerce.barcommerce.model.Mesa;
 import com.barcommerce.barcommerce.model.Pedido;
 
@@ -13,12 +12,17 @@ import java.util.stream.Collectors;
  */
 public class PedidoMapper {
 
-    /** Converte de DTO para entidade Pedido */
+    /**
+     * Converte de DTO para entidade Pedido.
+     * — Vincula apenas IDs de Cliente e Mesa (busca real é feita no service).
+     * — Mapeia lista de ItemPedido via ItemPedidoMapper e define relacionamento
+     *   bidirecional com o pedido.
+     */
     public static Pedido toEntity(PedidoDTO dto) {
         Pedido p = new Pedido();
         p.setId(dto.getId());
 
-        // Vincula apenas o ID do cliente (evita buscar o objeto completo aqui)
+        // Vincula apenas o ID do cliente (evita carregar objeto completo aqui)
         Cliente c = new Cliente();
         c.setId(dto.getClienteId());
         p.setCliente(c);
@@ -28,21 +32,27 @@ public class PedidoMapper {
         m.setId(dto.getMesaId());
         p.setMesa(m);
 
-        // Define o status do pedido (ou usa o default da entidade)
-        p.setStatus(dto.getStatus() != null ? dto.getStatus() : p.getStatus());
+        // Se veio um status no DTO, usa-o; senão preserva o default da entidade
+        if (dto.getStatus() != null) {
+            p.setStatus(dto.getStatus());
+        }
 
-        // Converte cada ItemPedidoDTO → ItemPedido, e define o pedido pai
+        // Converte cada ItemPedidoDTO → ItemPedido e associa ao pedido
         var itens = dto.getItens().stream()
-                .map(ItemPedidoMapper::toEntity) // Certifique-se que este método existe
-                .peek(item -> item.setPedido(p)) // Importante: item precisa ter setPedido()
+                .map(ItemPedidoMapper::toEntity)
+                .peek(item -> item.setPedido(p))
                 .collect(Collectors.toList());
-
         p.setItens(itens);
 
         return p;
     }
 
-    /** Converte de entidade Pedido para DTO */
+    /**
+     * Converte de entidade Pedido para DTO.
+     * — Extrai IDs de Cliente e Mesa.
+     * — Copia status, total e dataHora já calculados no entity.
+     * — Converte lista de ItemPedido → ItemPedidoDTO.
+     */
     public static PedidoDTO toDTO(Pedido p) {
         PedidoDTO dto = new PedidoDTO();
         dto.setId(p.getId());
@@ -52,11 +62,9 @@ public class PedidoMapper {
         dto.setTotal(p.getTotal());
         dto.setDataHora(p.getDataHora());
 
-        // Converte cada ItemPedido → ItemPedidoDTO
         var itensDto = p.getItens().stream()
-                .map(ItemPedidoMapper::toDTO) // Certifique-se que este método existe
+                .map(ItemPedidoMapper::toDTO)
                 .collect(Collectors.toList());
-
         dto.setItens(itensDto);
 
         return dto;

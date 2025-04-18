@@ -9,6 +9,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class MesaService {
@@ -38,6 +39,11 @@ public class MesaService {
 
     public void deletarMesa(Long id) {
         mesaRepository.deleteById(id);
+    }
+
+    // Garanta que este método retorne Optional<Mesa>
+    public Optional<Mesa> buscarPorId(Long id) {
+        return mesaRepository.findById(id);
     }
 
     /**

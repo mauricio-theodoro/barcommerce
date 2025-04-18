@@ -36,7 +36,7 @@ public class ItemPedido {
 
     @NotNull
     @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal subtotal;
+    private BigDecimal subtotal = BigDecimal.ZERO;
 
     /**
      * Antes de persistir ou atualizar, define precoUnitario e subtotal.
@@ -44,9 +44,11 @@ public class ItemPedido {
     @PrePersist
     @PreUpdate
     public void preCalcular() {
-        if (produto != null && quantidade != null) {
+        if (produto != null && produto.getPreco() != null && quantidade != null) {
             this.precoUnitario = produto.getPreco();
             this.subtotal = precoUnitario.multiply(BigDecimal.valueOf(quantidade));
+        } else {
+            this.subtotal = BigDecimal.ZERO; // Evita erro de null
         }
     }
 
@@ -72,7 +74,9 @@ public class ItemPedido {
 
     public void setProduto(Produto produto) {
         this.produto = produto;
-        this.precoUnitario = produto.getPreco();
+        if (produto != null) {
+            this.precoUnitario = produto.getPreco();
+        }
     }
 
     public Integer getQuantidade() {
