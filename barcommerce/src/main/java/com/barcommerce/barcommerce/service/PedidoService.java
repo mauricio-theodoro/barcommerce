@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Serviço responsável pelas operações relacionadas a pedidos.
@@ -36,6 +37,18 @@ public class PedidoService {
      */
     public List<Pedido> listarTodos() {
         return pedidoRepository.findAll();
+    }
+
+
+
+    /**
+     * Busca um pedido pelo ID.
+     *
+     * @param id ID do pedido
+     * @return Optional contendo o pedido, se encontrado
+     */
+    public Optional<Pedido> buscarPorId(Long id) {
+        return pedidoRepository.findById(id);
     }
 
     /**
@@ -124,6 +137,14 @@ public class PedidoService {
                 .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado"));
 
         pedido.setStatus(StatusPedido.FECHADO);
+        return pedidoRepository.save(pedido);
+    }
+
+    /**
+     * Persistir alterações de pagamento no pedido (statusPagamento, idTransacao, metodoPagamento).
+     */
+    @Transactional
+    public Pedido atualizarPagamento(Pedido pedido) {
         return pedidoRepository.save(pedido);
     }
 }

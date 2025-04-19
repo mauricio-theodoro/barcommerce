@@ -38,6 +38,9 @@ spring:
       max-request-size: 15MB
 
 app:
+  mesa:
+    latitude: -23.550520
+    longitude: -46.633308
   base-url: http://localhost:8080
   upload:
     dir: ./uploads/produtos
@@ -50,3 +53,8 @@ jwt:
 logging:
   level:
     org.springframework.web: DEBUG
+mercadopago:
+  access:
+    token: TEST-241e5740-63a9-4bd1-a0a8-e3ff5c11cd60
+  email:
+    padrao: mauricioantonionetinho@gmail.com

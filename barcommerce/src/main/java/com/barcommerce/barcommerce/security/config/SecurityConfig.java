@@ -51,11 +51,13 @@ public class SecurityConfig {
                         // 5) caixa: só GERENTE e ADMIN
                         .requestMatchers("/api/caixa/**")
                         .hasAnyRole("GERENTE","ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/pagamentos/pix").permitAll()
 
                         // 6) clientes (listar/editar/remover): só ADMIN e GERENTE
                         .requestMatchers(HttpMethod.GET,    "/api/clientes/**").hasAnyRole("ADMIN","GERENTE")
                         .requestMatchers(HttpMethod.PUT,    "/api/clientes/**").hasAnyRole("ADMIN","GERENTE")
                         .requestMatchers(HttpMethod.DELETE, "/api/clientes/**").hasAnyRole("ADMIN","GERENTE")
+                        .requestMatchers("/api/qr/**").permitAll()
 
                         // 7) dashboard: só ADMIN e GERENTE (via @PreAuthorize)
                         // .requestMatchers("/api/dashboard/**").hasAnyRole("ADMIN","GERENTE")

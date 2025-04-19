@@ -35,7 +35,7 @@ public class QRCodeService {
      */
     public byte[] gerarQRCodeParaMesa(Long mesaId, int largura, int altura) throws Exception {
         // Monta a URL completa em dev: http://localhost:8080/api/mesas/{id}/checkin
-        String url = baseUrl + "/api/mesas/" + mesaId + "/checkin";
+        String url = baseUrl + "/api/clientes/mesa/" + mesaId;
         QRCodeWriter writer = new QRCodeWriter();
         BitMatrix matrix = writer.encode(url, BarcodeFormat.QR_CODE, largura, altura);
 

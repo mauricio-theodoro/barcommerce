@@ -66,4 +66,17 @@ public class MesaController {
             @RequestParam Long clienteId) {
         mesaService.atribuirCliente(id, clienteId);
     }
+
+    /**
+     * Libera a mesa (só o anfitrião daquele deviceId pode chamar).
+     */
+    @PutMapping("/{id}/liberar")
+    public ResponseEntity<String> liberarMesa(
+            @PathVariable Long id,
+            @RequestParam("deviceId") String deviceId) {
+
+        mesaService.liberarMesa(id, deviceId);
+        return ResponseEntity.ok("Mesa liberada com sucesso.");
+    }
+
 }

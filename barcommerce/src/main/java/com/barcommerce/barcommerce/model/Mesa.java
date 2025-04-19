@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 /**
- * Representa uma mesa no restaurante/bar.
+ * Representa uma mesa no restaurante/bar, incluindo coordenadas para validação de localização.
  */
 @Entity
 @Table(name = "mesas")
@@ -29,38 +29,37 @@ public class Mesa {
     @Column(nullable = false, length = 20)
     private StatusMesa status = StatusMesa.LIVRE;
 
-    // Getters e Setters
+    /**
+     * Latitude da mesa, em graus decimais.
+     */
+    @NotNull(message = "Latitude é obrigatória")
+    @Column(nullable = false)
+    private Double latitude;
 
-    public Long getId() {
-        return id;
-    }
+    /**
+     * Longitude da mesa, em graus decimais.
+     */
+    @NotNull(message = "Longitude é obrigatória")
+    @Column(nullable = false)
+    private Double longitude;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
 
-    public String getIdentificacao() {
+    // Getters & Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-        return identificacao;
-    }
+    public String getIdentificacao() { return identificacao; }
+    public void setIdentificacao(String identificacao) { this.identificacao = identificacao; }
 
-    public void setIdentificacao(String identificacao) {
-        this.identificacao = identificacao;
-    }
+    public Integer getCapacidade() { return capacidade; }
+    public void setCapacidade(Integer capacidade) { this.capacidade = capacidade; }
 
-    public Integer getCapacidade() {
-        return capacidade;
-    }
+    public StatusMesa getStatus() { return status; }
+    public void setStatus(StatusMesa status) { this.status = status; }
 
-    public void setCapacidade(Integer capacidade) {
-        this.capacidade = capacidade;
-    }
+    public Double getLatitude() { return latitude; }
+    public void setLatitude(Double latitude) { this.latitude = latitude; }
 
-    public StatusMesa getStatus() {
-        return status;
-    }
-
-    public void setStatus(StatusMesa status) {
-        this.status = status;
-    }
+    public Double getLongitude() { return longitude; }
+    public void setLongitude(Double longitude) { this.longitude = longitude; }
 }
