@@ -1,6 +1,7 @@
 package com.barcommerce.barcommerce.service;
 
 import com.barcommerce.barcommerce.dto.CartaoResponseDTO;
+import com.barcommerce.barcommerce.dto.MercadoPagoWebhookDTO;
 import com.barcommerce.barcommerce.dto.PagamentoCartaoDTO;
 import com.barcommerce.barcommerce.enums.MetodoPagamento;
 import com.barcommerce.barcommerce.enums.StatusPagamento;
@@ -14,8 +15,12 @@ import com.mercadopago.exceptions.MPApiException;
 import com.mercadopago.exceptions.MPException;
 import com.mercadopago.resources.payment.Payment;
 import jakarta.annotation.PostConstruct;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -31,7 +36,7 @@ public class PagamentoService {
     @Value("${mercadopago.email.padrao}") // Adicione no YML
     private String emailPadrao;
 
-    private PaymentClient paymentClient;
+    private  PaymentClient paymentClient;
     private final PedidoService pedidoService;
 
     public PagamentoService(PedidoService pedidoService) {
@@ -193,5 +198,69 @@ public class PagamentoService {
         pedido.setStatusPagamento(StatusPagamento.APROVADO);
         pedido.setIdTransacao(idTransacao);
         pedidoService.atualizarPagamento(pedido);
+    }
+
+    /**
+     * Trata notificação via webhook: consulta o gateway e atualiza status completo.
+     */
+    public void confirmarPorWebhook(Long pagamentoId) {
+        try {
+            // 1) Recupera dados do pagamento diretamente do Mercado Pago
+            //    OBS: não existe PaymentGetRequest na SDK; get() aceita diretamente o id
+            Payment mp = paymentClient.get(pagamentoId);
+
+            if (mp == null) throw new IllegalStateException("Pagamento não encontrado no Mercado Pago: " + pagamentoId);
+
+
+            // 2) Mapeia o status retornado pela API para o nosso enum interno
+            StatusPagamento status =
+                    switch (mp.getStatus()) {
+                        case "approved"   -> StatusPagamento.APROVADO;
+                        case "refunded"   -> StatusPagamento.REEMBOLSADO;
+                        case "pending", "in_process" -> StatusPagamento.PENDENTE;
+                        default           -> StatusPagamento.RECUSADO;
+                    };
+
+            // 3) Busca o pedido vinculando pelo idTransacao que gravamos
+            Pedido pedido = pedidoService.buscarPorIdTransacao(mp.getId().toString())
+                    .orElseThrow(() -> new IllegalStateException(
+                            "Pedido não encontrado para transação: " + mp.getId()));
+
+            // 4) Atualiza somente os campos de pagamento
+            pedido.setStatusPagamento(status);
+            pedido.setMetodoPagamento(
+                    MetodoPagamento.valueOf(mp.getPaymentMethodId().toUpperCase())
+            );
+
+            // 5) Persiste a atualização
+            pedidoService.atualizarPagamento(pedido);
+
+        } catch (MPApiException apiEx) {
+            throw new RuntimeException(
+                    "Erro ao consultar pagamento no Mercado Pago: " +
+                            apiEx.getApiResponse().getContent(), apiEx);
+        } catch (MPException mpEx) {
+            throw new RuntimeException("Erro no SDK Mercado Pago: " + mpEx.getMessage(), mpEx);
+        }
+    }
+    /**
+     * Após webhook de reembolso, atualiza o pedido para StatusPagamento.REEMBOLSADO.
+     */
+    public void confirmarReembolsoPorWebhook(Long pagamentoId) {
+        try {
+            Payment mp = paymentClient.get(pagamentoId);
+            if (mp == null || !"refunded".equalsIgnoreCase(mp.getStatus())) {
+                throw new IllegalStateException("Pagamento não está em estado " +
+                        "de reembolso: " + Optional.ofNullable(mp).map(Payment::getStatus).orElse("nulo"));
+            }
+            String idTransacao = mp.getId().toString();
+            Pedido pedido = pedidoService.buscarPorIdTransacao(idTransacao)
+                    .orElseThrow(() -> new IllegalStateException(
+                            "Pedido não encontrado para transação=" + idTransacao));
+            pedido.setStatusPagamento(StatusPagamento.REEMBOLSADO);
+            pedidoService.atualizarPagamento(pedido);
+        } catch (MPApiException | MPException e) {
+            throw new RuntimeException("Erro ao processar reembolso webhook: " + e.getMessage(), e);
+        }
     }
 }

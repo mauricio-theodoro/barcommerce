@@ -9,5 +9,9 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class DashboardDTO {
     private BigDecimal totalVendas;
-    private Long totalClientesAtivos;  // renomeado para maior clareza
+    private long totalClientes;
+    private long pagamentosPendentes;
+    private long pagamentosRecusados;
+    private long pagamentosAprovados;
+    private long pagamentosReembolsados;
 }

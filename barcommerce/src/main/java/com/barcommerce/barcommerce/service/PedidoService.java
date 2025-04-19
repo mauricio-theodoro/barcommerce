@@ -1,5 +1,6 @@
 package com.barcommerce.barcommerce.service;
 
+import com.barcommerce.barcommerce.enums.StatusPagamento;
 import com.barcommerce.barcommerce.enums.StatusPedido;
 import com.barcommerce.barcommerce.model.*;
 import com.barcommerce.barcommerce.repository.PedidoRepository;
@@ -49,6 +50,15 @@ public class PedidoService {
      */
     public Optional<Pedido> buscarPorId(Long id) {
         return pedidoRepository.findById(id);
+    }
+
+    public Optional<Pedido> buscarPorIdTransacao(String idTransacao) {
+        return pedidoRepository.findByIdTransacao(idTransacao);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Pedido> listarPorPagamento(StatusPagamento status) {
+        return pedidoRepository.findByStatusPagamento(status);
     }
 
     /**

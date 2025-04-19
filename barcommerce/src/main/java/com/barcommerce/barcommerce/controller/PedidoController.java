@@ -1,6 +1,7 @@
 package com.barcommerce.barcommerce.controller;
 
 import com.barcommerce.barcommerce.dto.PedidoDTO;
+import com.barcommerce.barcommerce.enums.StatusPagamento;
 import com.barcommerce.barcommerce.mapper.PedidoMapper;
 import com.barcommerce.barcommerce.model.Pedido;
 import com.barcommerce.barcommerce.enums.StatusPedido;
@@ -30,6 +31,17 @@ public class PedidoController {
     @GetMapping
     public ResponseEntity<List<PedidoDTO>> listarTodos() {
         var list = pedidoService.listarTodos()
+                .stream()
+                .map(PedidoMapper::toDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(list);
+    }
+
+    @Operation(summary = "Lista pedidos por status de pagamento")
+    @GetMapping("/por-status-pagamento")
+    public ResponseEntity<List<PedidoDTO>> listarPorStatusPagamento(
+            @RequestParam StatusPagamento status) {
+        var list = pedidoService.listarPorPagamento(status)
                 .stream()
                 .map(PedidoMapper::toDTO)
                 .collect(Collectors.toList());
