@@ -58,3 +58,6 @@ mercadopago:
     token: TEST-241e5740-63a9-4bd1-a0a8-e3ff5c11cd60
   email:
     padrao: mauricioantonionetinho@gmail.com
+servico:
+  ml:
+    url: http://localhost:5000

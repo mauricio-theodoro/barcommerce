@@ -16,9 +16,12 @@ import java.util.stream.Collectors;
 @Service
 public class RecomendacaoService {
     private final PedidoRepository pedidoRepository;
+    private final ClienteRecomendacaoMlService clienteRecomendacaoMlService;
 
-    public RecomendacaoService(PedidoRepository pedidoRepository) {
+    public RecomendacaoService(PedidoRepository pedidoRepository,
+                               ClienteRecomendacaoMlService clienteRecomendacaoMlService) {
         this.pedidoRepository = pedidoRepository;
+        this.clienteRecomendacaoMlService = clienteRecomendacaoMlService;
     }
 
     /**
@@ -27,6 +30,17 @@ public class RecomendacaoService {
      * @param limit número máximo de recomendações
      */
     public List<RecomendacaoDTO> getRecommendationsForCliente(Long clienteId, int limit) {
+
+
+        // 1) Tenta obter IDs via ML
+        List<Long> mlIds = clienteRecomendacaoMlService.buscarIdsProdutosRecomendados(clienteId, limit);
+        if (mlIds != null && !mlIds.isEmpty()) {
+            // Constrói DTOs mínimos (freq não disponível no ML, usamos zero)
+            return mlIds.stream()
+                    .map(id -> new RecomendacaoDTO(id, null, 0))
+                    .collect(Collectors.toList());
+        }
+
         // 1) Buscar apenas pedidos entregues
         List<Pedido> pedidos = pedidoRepository
                 .findByClienteIdAndStatus(clienteId, StatusPedido.ENTREGUE);

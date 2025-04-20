@@ -2,9 +2,11 @@ package com.barcommerce.barcommerce.service;
 
 import com.barcommerce.barcommerce.enums.StatusPagamento;
 import com.barcommerce.barcommerce.enums.StatusPedido;
+import com.barcommerce.barcommerce.events.PedidoFechadoEvent;
 import com.barcommerce.barcommerce.model.*;
 import com.barcommerce.barcommerce.repository.PedidoRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,15 +24,18 @@ public class PedidoService {
     private final ClienteService clienteService;
     private final MesaService mesaService;
     private final ProdutoService produtoService;
+    private final ApplicationEventPublisher publisher;
 
     public PedidoService(PedidoRepository pedidoRepository,
                          ClienteService clienteService,
                          MesaService mesaService,
-                         ProdutoService produtoService) {
+                         ProdutoService produtoService,
+                         ApplicationEventPublisher publisher) {
         this.pedidoRepository = pedidoRepository;
         this.clienteService = clienteService;
         this.mesaService = mesaService;
         this.produtoService = produtoService;
+        this.publisher = publisher;
     }
 
     /**
@@ -145,9 +150,18 @@ public class PedidoService {
     public Pedido fecharPedido(Long id) {
         Pedido pedido = pedidoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado"));
-
+        // Após fechar, dispara evento para fidelidade
+        // 2) Atualiza o status
         pedido.setStatus(StatusPedido.FECHADO);
-        return pedidoRepository.save(pedido);
+
+        // 3) Persiste a alteração e captura o objeto retornado
+        Pedido salvo = pedidoRepository.save(pedido);
+
+        // 4) Dispara o evento de pedido fechado
+        publisher.publishEvent(new PedidoFechadoEvent(this, salvo));
+
+        // 5) Retorna o pedido salvo
+        return salvo;
     }
 
     /**

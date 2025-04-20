@@ -4,6 +4,7 @@ package com.barcommerce.barcommerce.service;
 import com.barcommerce.barcommerce.model.Cliente;
 import com.barcommerce.barcommerce.repository.ClienteRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,9 +14,11 @@ import java.util.Optional;
 public class ClienteService {
 
     private final ClienteRepository repo;
+    private final PasswordEncoder passwordEncoder;
 
-    public ClienteService(ClienteRepository repo) {
+    public ClienteService(ClienteRepository repo, PasswordEncoder passwordEncoder) {
         this.repo = repo;
+        this.passwordEncoder = passwordEncoder;
     }
 
     /** Lista todos os clientes. */
@@ -33,6 +36,11 @@ public class ClienteService {
         if (repo.existsByEmail(cliente.getEmail())) {
             throw new IllegalArgumentException("Já existe cliente com esse e‑mail");
         }
+
+        // Criptografa a senha antes de salvar
+        String senhaCriptografada = passwordEncoder.encode(cliente.getSenha());
+        cliente.setSenha(senhaCriptografada);
+
         return repo.save(cliente);
     }
 
@@ -40,11 +48,18 @@ public class ClienteService {
     public Cliente atualizarCliente(Long id, Cliente dados) {
         return repo.findById(id).map(c -> {
             if (!c.getEmail().equals(dados.getEmail()) && repo.existsByEmail(dados.getEmail())) {
-                throw new IllegalArgumentException("E‑mail já cadastrado em outro cliente");
+                throw new IllegalArgumentException("E-mail já cadastrado em outro cliente");
             }
             c.setNome(dados.getNome());
             c.setEmail(dados.getEmail());
             c.setTelefone(dados.getTelefone());
+
+            // Se quiser permitir atualização de senha, criptografe também aqui:
+            if (dados.getSenha() != null && !dados.getSenha().isBlank()) {
+                String novaSenhaCriptografada = passwordEncoder.encode(dados.getSenha());
+                c.setSenha(novaSenhaCriptografada);
+            }
+
             return repo.save(c);
         }).orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado"));
     }
