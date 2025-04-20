@@ -4,6 +4,8 @@ import com.barcommerce.barcommerce.model.Categoria;
 import com.barcommerce.barcommerce.model.Produto;
 import com.barcommerce.barcommerce.repository.CategoriaRepository;
 import com.barcommerce.barcommerce.repository.ProdutoRepository;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,15 +28,19 @@ public class ProdutoService {
     }
 
     /**
-     * Retorna todos os produtos cadastrados.
+     * Lista todos os produtos.
+     * - @Cacheable: armazena o resultado em cache sob a chave "produtos::all"
      */
+    @Cacheable(value = "produtos", key = "'all'")
     public List<Produto> listarTodos() {
         return produtoRepository.findAll();
     }
 
     /**
      * Busca um produto pelo ID.
+     * - @Cacheable: armazena cada produto em "produtos::id"
      */
+    @Cacheable(value = "produtos", key = "#id")
     public Optional<Produto> buscarPorId(Long id) {
         return produtoRepository.findById(id);
     }
@@ -45,6 +51,12 @@ public class ProdutoService {
      * @param produto Entidade com dados a persistir (categoria com apenas ID).
      * @return Optional com o produto salvo, ou vazio se categoria inválida.
      */
+    /**
+     * Cria um novo produto.
+     * - @CacheEvict(allEntries=true): limpa cache de listagens e buscas,
+     *   garantindo que retornos reflitam o novo registro.
+     */
+    @CacheEvict(value = "produtos", allEntries = true)
     public Optional<Produto> criarProduto(Produto produto) {
         if (produto.getCategoria() == null || produto.getCategoria().getId() == null) {
             return Optional.empty();
@@ -63,16 +75,18 @@ public class ProdutoService {
      * @param dadosAtualizados Entidade com novos dados (categoria com apenas ID).
      * @return Optional com o produto atualizado, ou vazio se não encontrado ou categoria inválida.
      */
+    /**
+     * Atualiza um produto existente.
+     * - @CacheEvict(allEntries=true): invalidar cache de produtos
+     */
+    @CacheEvict(value = "produtos", allEntries = true)
     public Optional<Produto> atualizarProduto(Long id, Produto dadosAtualizados) {
         return produtoRepository.findById(id)
                 .flatMap(produto -> {
-                    // Atualiza campos básicos
                     produto.setNome(dadosAtualizados.getNome());
                     produto.setPreco(dadosAtualizados.getPreco());
                     produto.setEstoque(dadosAtualizados.getEstoque());
                     produto.setTipo(dadosAtualizados.getTipo());
-
-                    // Valida categoria
                     if (dadosAtualizados.getCategoria() == null
                             || dadosAtualizados.getCategoria().getId() == null) {
                         return Optional.empty();
@@ -87,24 +101,22 @@ public class ProdutoService {
 
     /**
      * Deleta um produto pelo ID.
-     *
-     * @param id ID do produto a remover.
-     * @return true se deletado, false se não encontrado.
+     * - @CacheEvict(allEntries=true): limpa cache para refletir remoção.
      */
+    @CacheEvict(value = "produtos", allEntries = true)
     public boolean deletarProduto(Long id) {
         return produtoRepository.findById(id)
-                .map(produto -> {
-                    produtoRepository.delete(produto);
+                .map(p -> {
+                    produtoRepository.delete(p);
                     return true;
                 }).orElse(false);
     }
 
     /**
-     * Salva qualquer alteração no produto (útil para atualizações parciais como imagem).
-     *
-     * @param produto Entidade a salvar.
-     * @return Produto persistido.
+     * Salva qualquer alteração no produto (e.g. imagem).
+     * - @CacheEvict: invalida cache para manter consistência.
      */
+    @CacheEvict(value = "produtos", allEntries = true)
     public Produto salvar(Produto produto) {
         return produtoRepository.save(produto);
     }

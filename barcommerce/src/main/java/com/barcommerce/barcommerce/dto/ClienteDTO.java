@@ -37,6 +37,8 @@ public class ClienteDTO {
     @Past(message = "Data de nascimento deve ser no passado")
     private LocalDate dataNascimento;
 
+    private Integer pontosFidelidade;
+
     public ClienteDTO() {}
 
     /**
@@ -47,16 +49,18 @@ public class ClienteDTO {
                       String email,
                       String telefone,
                       String senha,
-                      LocalDate dataNascimento) {
+                      LocalDate dataNascimento,
+                      Integer pontosFidelidade) {
         this.id             = id;
         this.nome           = nome;
         this.email          = email;
         this.telefone       = telefone;
         this.senha          = senha;
         this.dataNascimento = dataNascimento;
+        this.pontosFidelidade = pontosFidelidade;
     }
 
-    // ========== GETTERS & SETTERS ==========
+// ========== GETTERS & SETTERS ==========
 
     public Long getId() {
         return id;
@@ -108,5 +112,13 @@ public class ClienteDTO {
 
     public void setDataNascimento(LocalDate dataNascimento) {
         this.dataNascimento = dataNascimento;
+    }
+
+    public Integer getPontosFidelidade() {
+        return pontosFidelidade;
+    }
+
+    public void setPontosFidelidade(Integer pontosFidelidade) {
+        this.pontosFidelidade = pontosFidelidade;
     }
 }

@@ -54,6 +54,9 @@ public class Cliente extends  BaseEntity {
     @JoinColumn(name = "mesa_id")
     private Mesa mesa;
 
+    @Column(name = "pontos_fidelidade", nullable = false)
+    private Integer pontosFidelidade = 0;  // inicia em zero
+
 
 // getters/setters
 
@@ -106,5 +109,13 @@ public class Cliente extends  BaseEntity {
 
     public void setDataNascimento(@Past(message = "Data de nascimento deve ser no passado") LocalDate dataNascimento) {
         this.dataNascimento = dataNascimento;
+    }
+
+    public Integer getPontosFidelidade() {
+        return pontosFidelidade;
+    }
+
+    public void setPontosFidelidade(Integer pontosFidelidade) {
+        this.pontosFidelidade = pontosFidelidade;
     }
 }

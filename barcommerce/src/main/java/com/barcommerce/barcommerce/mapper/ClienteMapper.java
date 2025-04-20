@@ -39,15 +39,14 @@ public class ClienteMapper {
      * Não inclui senha (mesmo hashed) por segurança.
      */
     public static ClienteDTO toDTO(Cliente entity) {
-        if (entity == null) {
-            return null;
-        }
+        if (entity == null) return null; // <-- ClienteDTO toDTO segundo modo de fazer if acima temos um outro exemplo
         ClienteDTO dto = new ClienteDTO();
         dto.setId(entity.getId());
         dto.setNome(entity.getNome());
         dto.setEmail(entity.getEmail());
         dto.setTelefone(entity.getTelefone());
         dto.setDataNascimento(entity.getDataNascimento());
+        dto.setPontosFidelidade(entity.getPontosFidelidade());  // inclui
         // senha não é copiada para a resposta
         return dto;
     }

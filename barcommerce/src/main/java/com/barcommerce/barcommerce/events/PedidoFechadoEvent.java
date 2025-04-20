@@ -14,6 +14,7 @@ public class PedidoFechadoEvent extends ApplicationEvent {
         this.pedido = pedido;
     }
 
+    /** Pedido que acabou de ser fechado. */
     public Pedido getPedido() {
         return pedido;
     }
