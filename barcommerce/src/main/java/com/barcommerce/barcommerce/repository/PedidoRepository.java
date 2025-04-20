@@ -4,6 +4,7 @@ import com.barcommerce.barcommerce.enums.StatusPagamento;
 import com.barcommerce.barcommerce.model.Pedido;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import com.barcommerce.barcommerce.enums.StatusPedido;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -32,4 +33,9 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
 
     List<Pedido> findByStatusPagamento(StatusPagamento statusPagamento);
     long countByStatusPagamento(StatusPagamento statusPagamento);
+
+    /**
+     * Consulta todos pedidos de um cliente com determinado status.
+     */
+    List<Pedido> findByClienteIdAndStatus(Long clienteId, StatusPedido status);
 }
