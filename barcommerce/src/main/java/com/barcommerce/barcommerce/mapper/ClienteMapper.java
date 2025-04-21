@@ -46,7 +46,6 @@ public class ClienteMapper {
         dto.setEmail(entity.getEmail());
         dto.setTelefone(entity.getTelefone());
         dto.setDataNascimento(entity.getDataNascimento());
-        dto.setPontosFidelidade(entity.getPontosFidelidade());  // inclui
         // senha não é copiada para a resposta
         return dto;
     }

@@ -4,14 +4,18 @@ package com.barcommerce.barcommerce.service;
 import com.barcommerce.barcommerce.dto.PontuacaoUpdateDTO;
 import com.barcommerce.barcommerce.events.PedidoFechadoEvent;
 import com.barcommerce.barcommerce.model.Cliente;
+import com.barcommerce.barcommerce.model.ClienteFidelidade;
 import com.barcommerce.barcommerce.model.PontuacaoEvento;
+import com.barcommerce.barcommerce.repository.ClienteFidelidadeRepository;
 import com.barcommerce.barcommerce.repository.ClienteRepository;
 import com.barcommerce.barcommerce.repository.PontuacaoEventoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 /**
  * Ao receber PedidoFechadoEvent, adiciona 1 ponto de fidelidade
@@ -20,37 +24,42 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 public class FidelidadeListener {
 
-    @Autowired
+    private final ClienteFidelidadeRepository fidelidadeRepo;
     private final ClienteRepository clienteRepo;
-
-    @Autowired
     private final PontuacaoEventoRepository eventoRepo;
-    @Autowired
-    private SimpMessagingTemplate messagingTemplate;
+    private final SimpMessagingTemplate messagingTemplate;
 
-    public FidelidadeListener(ClienteRepository clienteRepo, PontuacaoEventoRepository eventoRepo) {
+    public FidelidadeListener(ClienteRepository clienteRepo,
+                              PontuacaoEventoRepository eventoRepo,
+                              SimpMessagingTemplate messagingTemplate,
+                              ClienteFidelidadeRepository fidelidadeRepo) {
         this.clienteRepo = clienteRepo;
         this.eventoRepo = eventoRepo;
+        this.messagingTemplate = messagingTemplate;
+        this.fidelidadeRepo = fidelidadeRepo;
     }
 
-    @EventListener
-    @Transactional
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onPedidoFechado(PedidoFechadoEvent event) {
-        Cliente cliente = event.getPedido().getCliente();
-        // adiciona 1 ponto
-        cliente.setPontosFidelidade(cliente.getPontosFidelidade() + 1);
-        clienteRepo.save(cliente);
-        // aqui poderíamos também enviar notificação via WebSocket, e‑mail etc.
+        Long clienteId = event.getPedido().getCliente().getId();
 
-        // registra histórico
-        PontuacaoEvento ev = new PontuacaoEvento(cliente, 1, "Pedido fechado");
+        // 1) Carrega ou cria o registro de fidelidade
+        ClienteFidelidade f = fidelidadeRepo.findByClienteId(clienteId)
+                .orElseGet(() -> new ClienteFidelidade(event.getPedido().getCliente()));
+
+        // 2) Incrementa saldo e salva
+        f.setPontos(f.getPontos() + 1);
+        fidelidadeRepo.save(f);
+
+        // 3) Persiste histórico de pontos
+        PontuacaoEvento ev = new PontuacaoEvento(event.getPedido().getCliente(), 1, "Pedido fechado");
         eventoRepo.save(ev);
 
-        // envia via WebSocket para subscribers em /topic/pontos/{clienteId}
+        // 4) Emite evento via WebSocket
         messagingTemplate.convertAndSend(
-                "/topic/pontos/" + cliente.getId(),
-                new PontuacaoUpdateDTO(cliente.getId(), cliente.getPontosFidelidade())
+                "/topic/pontos/" + clienteId,
+                new PontuacaoUpdateDTO(clienteId, f.getPontos())
         );
-        // TODO: verificar limites para emitir vouchers ou badges
     }
 }

@@ -5,11 +5,8 @@ import jakarta.validation.constraints.*;
 import java.time.LocalDate;
 
 /**
- * DTO para criação/atualização e exibição de Cliente.
- * <p>
- * Contém tanto os campos de leitura (sem a senha) quanto os de gravação
- * (incluindo senha e data de nascimento) — dependendo do uso no controller.
- * </p>
+ * DTO para criação, atualização e exibição de Cliente.
+ * Inclui senha (para entrada) mas nunca a retorna na resposta.
  */
 public class ClienteDTO {
 
@@ -28,7 +25,6 @@ public class ClienteDTO {
     @Size(max = 20, message = "Telefone pode ter até 20 caracteres")
     private String telefone;
 
-    // Somente para criação/atualização — nunca exponha isso em respostas.
     @NotBlank(message = "Senha é obrigatória")
     @Size(min = 6, message = "Senha deve ter pelo menos 6 caracteres")
     private String senha;
@@ -37,30 +33,23 @@ public class ClienteDTO {
     @Past(message = "Data de nascimento deve ser no passado")
     private LocalDate dataNascimento;
 
-    private Integer pontosFidelidade;
-
     public ClienteDTO() {}
 
-    /**
-     * Construtor completo (pode ser usado em testes ou mappers).
-     */
     public ClienteDTO(Long id,
                       String nome,
                       String email,
                       String telefone,
                       String senha,
-                      LocalDate dataNascimento,
-                      Integer pontosFidelidade) {
-        this.id             = id;
-        this.nome           = nome;
-        this.email          = email;
-        this.telefone       = telefone;
-        this.senha          = senha;
+                      LocalDate dataNascimento) {
+        this.id = id;
+        this.nome = nome;
+        this.email = email;
+        this.telefone = telefone;
+        this.senha = senha;
         this.dataNascimento = dataNascimento;
-        this.pontosFidelidade = pontosFidelidade;
     }
 
-// ========== GETTERS & SETTERS ==========
+    // Getters & Setters
 
     public Long getId() {
         return id;
@@ -95,8 +84,7 @@ public class ClienteDTO {
     }
 
     /**
-     * Retorna a senha **sem** mascarar — use apenas em camada de serviço
-     * para criptografar antes de salvar. Nunca retorne isso no corpo HTTP.
+     * Senha em texto plano — criptografar na camada de serviço.
      */
     public String getSenha() {
         return senha;
@@ -112,13 +100,5 @@ public class ClienteDTO {
 
     public void setDataNascimento(LocalDate dataNascimento) {
         this.dataNascimento = dataNascimento;
-    }
-
-    public Integer getPontosFidelidade() {
-        return pontosFidelidade;
-    }
-
-    public void setPontosFidelidade(Integer pontosFidelidade) {
-        this.pontosFidelidade = pontosFidelidade;
     }
 }

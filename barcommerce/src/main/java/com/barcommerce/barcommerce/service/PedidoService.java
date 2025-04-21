@@ -1,5 +1,6 @@
 package com.barcommerce.barcommerce.service;
 
+import com.barcommerce.barcommerce.enums.MetodoPagamento;
 import com.barcommerce.barcommerce.enums.StatusPagamento;
 import com.barcommerce.barcommerce.enums.StatusPedido;
 import com.barcommerce.barcommerce.events.PedidoFechadoEvent;
@@ -147,17 +148,35 @@ public class PedidoService {
      * @return Pedido com status atualizado
      */
     @Transactional
-    public Pedido fecharPedido(Long id) {
+    public Pedido fecharPedido(Long id, String metodoPagamento, BigDecimal valorPago) {
+
+        // 1) Busca o pedido existente
         Pedido pedido = pedidoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado"));
-        // Após fechar, dispara evento para fidelidade
-        // 2) Atualiza o status
+
+        // 2) Verifica se o valor pago confere com o total do pedido
+        if (valorPago.compareTo(pedido.getTotal()) != 0) {
+            throw new IllegalArgumentException("Valor pago (" + valorPago +
+                    ") não confere com o total do pedido (" + pedido.getTotal() + ").");
+        }
+        // Converte a string para o enum (certifique-se de que o valor recebido seja exatamente igual aos valores definidos no enum)
+        try {
+            MetodoPagamento mp = MetodoPagamento.valueOf(metodoPagamento.toUpperCase());
+            pedido.setMetodoPagamento(mp);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Método de pagamento inválido: " + metodoPagamento);
+        }
+
+        // 3) Atualiza o status para FECHADO
         pedido.setStatus(StatusPedido.FECHADO);
 
-        // 3) Persiste a alteração e captura o objeto retornado
+        // 5) Define o status do pagamento – supondo que o pagamento foi realizado integralmente
+        pedido.setStatusPagamento(StatusPagamento.APROVADO);
+
+        // 4) Persiste a alteração do pedido
         Pedido salvo = pedidoRepository.save(pedido);
 
-        // 4) Dispara o evento de pedido fechado
+        // 5) Dispara o evento, se houver, para fidelidade, etc.
         publisher.publishEvent(new PedidoFechadoEvent(this, salvo));
 
         // 5) Retorna o pedido salvo

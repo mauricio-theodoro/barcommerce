@@ -1,5 +1,6 @@
 package com.barcommerce.barcommerce.controller;
 
+import com.barcommerce.barcommerce.dto.FecharPedidoDTO;
 import com.barcommerce.barcommerce.dto.PedidoDTO;
 import com.barcommerce.barcommerce.enums.StatusPagamento;
 import com.barcommerce.barcommerce.mapper.PedidoMapper;
@@ -7,6 +8,7 @@ import com.barcommerce.barcommerce.model.Pedido;
 import com.barcommerce.barcommerce.enums.StatusPedido;
 import com.barcommerce.barcommerce.service.PedidoService;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +16,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -68,9 +71,27 @@ public class PedidoController {
 
     /** Fechar → FECHADO */
     @PutMapping("/{id}/fechar")
-    public PedidoDTO fechar(@PathVariable Long id) {
-        var p = pedidoService.fecharPedido(id);
-        return PedidoMapper.toDTO(p);
+    public ResponseEntity<?> fechar(
+            @PathVariable Long id,
+            @RequestBody FecharPedidoDTO request) {  // Recebe o JSON com método de pagamento e valor pago
+
+        if (request.getMetodoPagamento() == null || request.getMetodoPagamento().trim().isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body("O campo 'metodoPagamento' é obrigatório.");
+        }
+        if (request.getValorPago() == null) {
+            return ResponseEntity.badRequest()
+                    .body("O campo 'valorPago' é obrigatório.");
+        }
+
+        try {
+            var pedidoFechado = pedidoService.fecharPedido(id, request.getMetodoPagamento(), request.getValorPago());
+            return ResponseEntity.ok(PedidoMapper.toDTO(pedidoFechado));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(e.getMessage());
+        }
     }
 
 

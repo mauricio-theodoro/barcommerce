@@ -1,6 +1,8 @@
 package com.barcommerce.barcommerce.controller;
 
 import com.barcommerce.barcommerce.dto.ClienteDTO;
+import com.barcommerce.barcommerce.dto.ClienteRankingDTO;
+import com.barcommerce.barcommerce.dto.PontuacaoEventoDTO;
 import com.barcommerce.barcommerce.mapper.ClienteMapper;
 import com.barcommerce.barcommerce.model.ClienteFidelidade;
 import com.barcommerce.barcommerce.model.PontuacaoEvento;
@@ -24,21 +26,17 @@ public class FidelidadeController {
 
     private final ClienteFidelidadeRepository repo;
     private final PontuacaoEventoRepository eventoRepo;
-    private final ClienteRepository clienteRepo;
 
     public FidelidadeController(ClienteFidelidadeRepository repo,
-                                PontuacaoEventoRepository eventoRepo,
-                                ClienteRepository clienteRepo) {
+                                PontuacaoEventoRepository eventoRepo) {
         this.repo = repo;
         this.eventoRepo = eventoRepo;
-        this.clienteRepo = clienteRepo;
     }
 
     @Operation(summary = "Consulta saldo de pontos de um cliente")
     @GetMapping("/{clienteId}")
     public ResponseEntity<Integer> getPontos(@PathVariable Long clienteId) {
-        Optional<ClienteFidelidade> opt = repo.findByClienteId(clienteId);
-        return opt
+        return repo.findByClienteId(clienteId)
                 .map(f -> ResponseEntity.ok(f.getPontos()))
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -47,26 +45,46 @@ public class FidelidadeController {
      * GET /api/fidelidade/ranking?limit=10
      * retorna top N clientes por pontos.
      */
+    @Operation(summary = "Ranking de clientes por saldo de pontos")
     @GetMapping("/ranking")
-    public ResponseEntity<List<ClienteDTO>> ranking(
+    public ResponseEntity<List<ClienteRankingDTO>> ranking(
             @RequestParam(defaultValue = "10") int limit) {
-        List<ClienteDTO> top = clienteRepo.findAll().stream()
-                .sorted((a,b) -> b.getPontosFidelidade() - a.getPontosFidelidade())
+        List<ClienteRankingDTO> clientes = repo.findAll().stream()
+                .sorted((a, b) -> b.getPontos() - a.getPontos())
                 .limit(limit)
-                .map(ClienteMapper::toDTO)
+                .map(f -> {
+                    var cliente = f.getCliente();
+                    return new ClienteRankingDTO(
+                            cliente.getId(),
+                            cliente.getNome(),
+                            cliente.getEmail(),
+                            cliente.getTelefone(),
+                            cliente.getDataNascimento(),
+                            f.getPontos()
+                    );
+                })
                 .collect(Collectors.toList());
-        return ResponseEntity.ok(top);
+        return ResponseEntity.ok(clientes);
     }
 
     /**
      * GET /api/fidelidade/historico/{clienteId}
      * retorna histórico de eventos de pontuação.
      */
+    @Operation(summary = "Histórico de pontuação do cliente")
     @GetMapping("/historico/{clienteId}")
-    public ResponseEntity<List<PontuacaoEvento>> historico(
-            @PathVariable Long clienteId) {
-        List<PontuacaoEvento> eventos = eventoRepo
-                .findByClienteIdOrderByTimestampDesc(clienteId);
+    public ResponseEntity<List<PontuacaoEventoDTO>> historico(@PathVariable Long clienteId) {
+        List<PontuacaoEventoDTO> eventos = eventoRepo
+                .findByClienteIdOrderByTimestampDesc(clienteId)
+                .stream()
+                .map(e -> new PontuacaoEventoDTO(
+                        e.getId(),
+                        e.getCliente().getId(),
+                        e.getPontosAlterados(),
+                        e.getMotivo(),
+                        e.getTimestamp()
+                ))
+                .toList();
         return ResponseEntity.ok(eventos);
     }
 }

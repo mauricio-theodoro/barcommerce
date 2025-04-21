@@ -5,20 +5,17 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Past;
-
 import java.time.LocalDate;
 
 /**
- * Representa um cliente no sistema (consumidor que realiza pedidos).
- * Inclui credenciais (senha criptografada) e data de nascimento para
- * futura integração de fidelização.
+ * Representa um cliente do sistema, com dados básicos e referência à mesa.
  */
 @Entity
 @Table(
         name = "clientes",
         uniqueConstraints = @UniqueConstraint(columnNames = "email")
 )
-public class Cliente extends  BaseEntity {
+public class Cliente extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,29 +37,23 @@ public class Cliente extends  BaseEntity {
     @NotBlank(message = "Senha é obrigatória")
     @Column(nullable = false)
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    private String senha; // armazenada criptografada (BCrypt)
+    private String senha;
 
     @Past(message = "Data de nascimento deve ser no passado")
-    @Column(
-            name = "data_nascimento",
-            nullable = false,
-            columnDefinition = "DATE DEFAULT '1970-01-01'"
-    )
+    @Column(name = "data_nascimento", nullable = false,
+            columnDefinition = "DATE DEFAULT '1970-01-01'")
     private LocalDate dataNascimento;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mesa_id")
     private Mesa mesa;
 
-    @Column(name = "pontos_fidelidade", nullable = false)
-    private Integer pontosFidelidade = 0;  // inicia em zero
-
-
-// getters/setters
+    // --- Getters e Setters ---
 
     public Long getId() {
         return id;
     }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -70,6 +61,7 @@ public class Cliente extends  BaseEntity {
     public String getNome() {
         return nome;
     }
+
     public void setNome(String nome) {
         this.nome = nome;
     }
@@ -77,6 +69,7 @@ public class Cliente extends  BaseEntity {
     public String getEmail() {
         return email;
     }
+
     public void setEmail(String email) {
         this.email = email;
     }
@@ -84,8 +77,25 @@ public class Cliente extends  BaseEntity {
     public String getTelefone() {
         return telefone;
     }
+
     public void setTelefone(String telefone) {
         this.telefone = telefone;
+    }
+
+    public String getSenha() {
+        return senha;
+    }
+
+    public void setSenha(String senha) {
+        this.senha = senha;
+    }
+
+    public LocalDate getDataNascimento() {
+        return dataNascimento;
+    }
+
+    public void setDataNascimento(LocalDate dataNascimento) {
+        this.dataNascimento = dataNascimento;
     }
 
     public Mesa getMesa() {
@@ -94,28 +104,5 @@ public class Cliente extends  BaseEntity {
 
     public void setMesa(Mesa mesa) {
         this.mesa = mesa;
-    }
-    public @NotBlank(message = "Senha é obrigatória") String getSenha() {
-        return senha;
-    }
-
-    public void setSenha(@NotBlank(message = "Senha é obrigatória") String senha) {
-        this.senha = senha;
-    }
-
-    public @Past(message = "Data de nascimento deve ser no passado") LocalDate getDataNascimento() {
-        return dataNascimento;
-    }
-
-    public void setDataNascimento(@Past(message = "Data de nascimento deve ser no passado") LocalDate dataNascimento) {
-        this.dataNascimento = dataNascimento;
-    }
-
-    public Integer getPontosFidelidade() {
-        return pontosFidelidade;
-    }
-
-    public void setPontosFidelidade(Integer pontosFidelidade) {
-        this.pontosFidelidade = pontosFidelidade;
     }
 }

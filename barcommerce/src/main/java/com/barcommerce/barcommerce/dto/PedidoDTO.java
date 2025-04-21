@@ -1,6 +1,7 @@
 package com.barcommerce.barcommerce.dto;
 
 import com.barcommerce.barcommerce.enums.StatusPedido;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -21,6 +22,7 @@ public class PedidoDTO {
     private Long mesaId;
 
     @NotEmpty(message = "Pedido deve ter ao menos um item")
+    @Valid
     private List<ItemPedidoDTO> itens;
 
     private StatusPedido status;
@@ -55,7 +57,6 @@ public class PedidoDTO {
         this.id = id;
     }
 
-    @NotNull(message = "Cliente obrigatório")
     public Long getClienteId() {
         return clienteId;
     }
@@ -64,7 +65,6 @@ public class PedidoDTO {
         this.clienteId = clienteId;
     }
 
-    @NotNull(message = "Mesa obrigatória")
     public Long getMesaId() {
         return mesaId;
     }
@@ -73,7 +73,6 @@ public class PedidoDTO {
         this.mesaId = mesaId;
     }
 
-    @NotEmpty(message = "Pedido deve ter ao menos um item")
     public List<ItemPedidoDTO> getItens() {
         return itens;
     }
