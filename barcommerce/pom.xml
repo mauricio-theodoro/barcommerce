@@ -5,6 +5,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
+	<!-- Parent do Spring Boot -->
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
@@ -12,18 +13,20 @@
 		<relativePath/>
 	</parent>
 
+	<!-- Informações básicas do projeto -->
 	<groupId>com.barcommerce</groupId>
 	<artifactId>barcommerce</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>barcommerce</name>
 	<description>Sistema de gerenciamento de comércio para bares</description>
 
+	<!-- Versão do Java utilizada no projeto -->
 	<properties>
 		<java.version>21</java.version>
 	</properties>
 
 	<dependencies>
-		<!-- Spring Boot Starters -->
+		<!-- Spring Boot - Web e JPA -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -33,14 +36,14 @@
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 
-		<!-- Banco de Dados - MariaDB -->
+		<!-- Driver do banco de dados MariaDB -->
 		<dependency>
 			<groupId>org.mariadb.jdbc</groupId>
 			<artifactId>mariadb-java-client</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 
-		<!-- Lombok -->
+		<!-- Lombok para reduzir boilerplate de código -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
@@ -48,7 +51,7 @@
 			<scope>provided</scope>
 		</dependency>
 
-		<!-- Validação -->
+		<!-- Validação com Jakarta + Hibernate Validator -->
 		<dependency>
 			<groupId>jakarta.validation</groupId>
 			<artifactId>jakarta.validation-api</artifactId>
@@ -58,32 +61,56 @@
 			<artifactId>hibernate-validator</artifactId>
 		</dependency>
 
-		<!-- Documentação Swagger/OpenAPI -->
+		<!-- Documentação com Swagger/OpenAPI -->
 		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
 			<version>2.3.0</version>
 		</dependency>
 
+		<!-- QR Code - Biblioteca ZXing -->
+		<dependency>
+			<groupId>com.google.zxing</groupId>
+			<artifactId>core</artifactId>
+			<version>3.5.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.zxing</groupId>
+			<artifactId>javase</artifactId>
+			<version>3.5.0</version>
+		</dependency>
+
+		<!-- SDK do Mercado Pago -->
+		<dependency>
+			<groupId>com.mercadopago</groupId>
+			<artifactId>sdk-java</artifactId>
+			<version>2.1.0</version>
+		</dependency>
+
+		<!-- Biblioteca auxiliar dx-java para Mercado Pago (não é obrigatória, mas pode causar conflito com sdk-java) -->
+		<!-- Caso não esteja usando funcionalidades específicas da dx-java, recomenda-se usar somente o sdk-java -->
+
+		<!-- YAML parser (caso use arquivos .yml personalizados além do application.yml) -->
 		<dependency>
 			<groupId>org.yaml</groupId>
 			<artifactId>snakeyaml</artifactId>
 			<version>2.2</version>
 		</dependency>
 
-		<!-- Devtools para auto-restart -->
+		<!-- Spring Boot DevTools - reinício automático da aplicação -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 
-		<!-- Security and Token -->
+		<!-- Spring Security -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
 
+		<!-- JWT - Geração e leitura de tokens -->
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-api</artifactId>
@@ -101,8 +128,28 @@
 			<version>0.11.5</version>
 			<scope>runtime</scope>
 		</dependency>
+		<!-- Para usar as anotações de WebSocket/SIMP (STOMP) -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-websocket</artifactId>
+		</dependency>
 
-		<!-- Testes -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-cache</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-redis</artifactId>
+		</dependency>
+
+		<!-- WebFlux  -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webflux</artifactId>
+		</dependency>
+
+		<!-- Testes com Spring Boot, Mockito e JUnit -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
@@ -124,7 +171,7 @@
 
 	<build>
 		<plugins>
-			<!-- Compilador Java -->
+			<!-- Plugin para compilação com Java 21 -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -142,7 +189,7 @@
 				</configuration>
 			</plugin>
 
-			<!-- Spring Boot Plugin -->
+			<!-- Plugin do Spring Boot -->
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
