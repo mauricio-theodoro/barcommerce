@@ -60,6 +60,8 @@ jwt:
 logging:
   level:
     org.springframework.web: DEBUG
+    org.springframework.transaction: DEBUG
+
 mercadopago:
   access:
     token: TEST-241e5740-63a9-4bd1-a0a8-e3ff5c11cd60
